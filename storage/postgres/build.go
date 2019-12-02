@@ -85,7 +85,7 @@ func scanBuildRows(rows *sql.Rows) (*storage.BuildWithDuration, error) {
 // If no builds exist storage.ErrNotExist is returned
 func (c *Client) GetLatestBuildByDigest(appName, totalInputDigest string, branchId string) (*storage.BuildWithDuration, error) {
 	const query = buildQueryWithoutInputsOutputs + `
-	 WHERE application.name = $1 AND build.total_input_digest = $2 AND application.branch = $3
+	 WHERE application.name = $1 AND build.total_input_digest = $2 AND build.branch = $3
 	 ORDER BY build.stop_timestamp DESC LIMIT 1
 	 `
 
