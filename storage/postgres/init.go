@@ -17,6 +17,7 @@ CREATE TABLE build (
 	id SERIAL PRIMARY KEY,
 	vcs_id INTEGER REFERENCES vcs(id) ON DELETE CASCADE,
 	application_id INTEGER REFERENCES application (id) ON DELETE CASCADE,
+	branch TEST NOT NULL,
 	start_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
 	stop_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
 	total_input_digest TEXT NOT NULL
@@ -62,6 +63,5 @@ CREATE TABLE input_build (
 // Init creates the baur tables in the postgresql database
 func (c *Client) Init() error {
 	_, err := c.Db.Exec(initQuery)
-
 	return err
 }

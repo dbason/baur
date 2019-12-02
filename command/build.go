@@ -74,6 +74,7 @@ const buildExampleHelp = `
 build payment-service		build and upload the application with the name payment-service
 build --verbose --force		rebuild and upload all applications, enable verbose output
 build --skip-upload shop-ui	build the application with the name shop-ui, skip uploading it's build ouputs
+build --branch=shop shop-ui	build the shop-ui using the shop branch identifier
 build ui/shop			build and upload the application in the directory ui/shop
 `
 
@@ -97,6 +98,8 @@ var (
 	outputBackends baur.BuildOutputBackends
 )
 
+var branchFlag string
+
 type uploadUserData struct {
 	App    *baur.App
 	Output baur.BuildOutput
@@ -113,6 +116,8 @@ func init() {
 		"skip uploading build outputs and recording the build")
 	buildCmd.Flags().BoolVarP(&buildForce, "force", "f", false,
 		"force rebuilding of all applications")
+	buildCmd.PersistentFlags().StringVarP(&branchFlag, "branch", "b", "default", "Branch identifier to store build against")
+
 	rootCmd.AddCommand(buildCmd)
 }
 
@@ -529,7 +534,7 @@ func buildRun(cmd *cobra.Command, args []string) {
 func mustGetBuildStatus(app *baur.App, storage storage.Storer) (baur.BuildStatus, *storage.BuildWithDuration, string) {
 	var strBuildID string
 
-	status, build, err := baur.GetBuildStatus(storage, app)
+	status, build, err := baur.GetBuildStatus(storage, app, branchFlag)
 	if err != nil {
 		log.Fatalf("%s: %s", app.Name, err)
 	}

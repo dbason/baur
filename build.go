@@ -42,7 +42,7 @@ func (b BuildStatus) String() string {
 // storage if a build for this input digest already exist.
 // If the function returns BuildStatusExist the returned build pointer is valid
 // otherwise it is nil.
-func GetBuildStatus(storer storage.Storer, app *App) (BuildStatus, *storage.BuildWithDuration, error) {
+func GetBuildStatus(storer storage.Storer, app *App, branchId string) (BuildStatus, *storage.BuildWithDuration, error) {
 	if len(app.BuildCmd) == 0 {
 		return BuildStatusBuildCommandUndefined, nil, nil
 	}
@@ -56,7 +56,7 @@ func GetBuildStatus(storer storage.Storer, app *App) (BuildStatus, *storage.Buil
 		return -1, nil, errors.Wrap(err, "calculating total input digest failed")
 	}
 
-	build, err := storer.GetLatestBuildByDigest(app.Name, d.String())
+	build, err := storer.GetLatestBuildByDigest(app.Name, d.String(), branchId)
 	if err != nil {
 		if err == storage.ErrNotExist {
 			return BuildStatusPending, nil, nil

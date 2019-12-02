@@ -83,13 +83,13 @@ func scanBuildRows(rows *sql.Rows) (*storage.BuildWithDuration, error) {
 // stop_timestamp is returned.
 // Inputs are not fetched from the database.
 // If no builds exist storage.ErrNotExist is returned
-func (c *Client) GetLatestBuildByDigest(appName, totalInputDigest string) (*storage.BuildWithDuration, error) {
+func (c *Client) GetLatestBuildByDigest(appName, totalInputDigest string, branchId string) (*storage.BuildWithDuration, error) {
 	const query = buildQueryWithoutInputsOutputs + `
-	 WHERE application.name = $1 AND build.total_input_digest = $2
+	 WHERE application.name = $1 AND build.total_input_digest = $2 AND application.branch = $3
 	 ORDER BY build.stop_timestamp DESC LIMIT 1
 	 `
 
-	rows, err := c.Db.Query(query, appName, totalInputDigest)
+	rows, err := c.Db.Query(query, appName, totalInputDigest, branchId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "db query '%s' failed", query)
 	}

@@ -44,6 +44,7 @@ var lsAppsCmd = &cobra.Command{
 }
 
 var lsAppsConfig lsAppsConf
+var lsBranchFlag string
 
 func init() {
 	lsAppsCmd.Flags().BoolVar(&lsAppsConfig.csv, "csv", false,
@@ -57,6 +58,8 @@ func init() {
 
 	lsAppsCmd.Flags().VarP(&lsAppsConfig.buildStatus, "build-status", "s",
 		lsAppsConfig.buildStatus.Usage(highlight))
+
+	lsAppsCmd.PersistentFlags().StringVarP(&lsBranchFlag, "branch", "b", "default", "Branch identifier to store build against")
 
 	lsAppsConfig.fields = flag.NewFields([]string{
 		lsAppNameParam,
@@ -131,7 +134,7 @@ func ls(cmd *cobra.Command, args []string) {
 		if storageQueryNeeded {
 			var err error
 
-			buildStatus, build, err = baur.GetBuildStatus(storageClt, app)
+			buildStatus, build, err = baur.GetBuildStatus(storageClt, app, lsBranchFlag)
 			if err != nil {
 				log.Fatalf("gathering informations for %s failed: %s", app, err)
 			}
