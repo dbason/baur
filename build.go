@@ -45,6 +45,7 @@ func (b BuildStatus) String() string {
 func GetBuildStatus(storer storage.Storer, app *App, branchId string, compare string) (BuildStatus, *storage.BuildWithDuration, error) {
 	var build *storage.BuildWithDuration
 	var err error
+	var branchToUse string
 	if len(app.BuildCmd) == 0 {
 		return BuildStatusBuildCommandUndefined, nil, nil
 	}
@@ -53,36 +54,32 @@ func GetBuildStatus(storer storage.Storer, app *App, branchId string, compare st
 		return BuildStatusInputsUndefined, nil, nil
 	}
 
-	d, err := app.TotalInputDigest()
-	if err != nil {
-		return -1, nil, errors.Wrap(err, "calculating total input digest failed")
+	d, digestErr := app.TotalInputDigest()
+	if digestErr != nil {
+		return -1, nil, errors.Wrap(digestErr, "calculating total input digest failed")
+	}
+
+	if compare != "" && branchId != compare {
+		branchTest, testErr := storer.AreBuildsForBranch(app.Name, branchId)
+		if testErr != nil {
+			return -1, nil, errors.Wrap(testErr, "Checking branch builds failed")
+		}
+		if branchTest {
+			branchToUse = branchId
+		} else {
+			branchToUse = compare
+		}
 	}
 	if app.UseLastBuild {
-		build, err = storer.GetLastBuildCompareDigest(app.Name, d.String(), branchId)
+		build, err = storer.GetLastBuildCompareDigest(app.Name, d.String(), branchToUse)
 	} else {
-		build, err = storer.GetLatestBuildByDigest(app.Name, d.String(), branchId)
+		build, err = storer.GetLatestBuildByDigest(app.Name, d.String(), branchToUse)
 	}
 	if err != nil {
 		if err == storage.ErrNotExist {
-			if compare != "" && branchId != compare {
-				if app.UseLastBuild {
-					build, err = storer.GetLastBuildCompareDigest(app.Name, d.String(), compare)
-				} else {
-					build, err = storer.GetLatestBuildByDigest(app.Name, d.String(), compare)
-				}
-				if err != nil {
-					if err == storage.ErrNotExist {
-						return BuildStatusPending, nil, nil
-					} else {
-						return -1, nil, errors.Wrap(err, "fetching latest build failed")
-					}
-				}
-			} else {
-				return BuildStatusPending, nil, nil
-			}
-		} else {
-			return -1, nil, errors.Wrap(err, "fetching latest build failed")
+			return BuildStatusPending, nil, nil
 		}
+		return -1, nil, errors.Wrap(err, "fetching latest build failed")
 	}
 
 	return BuildStatusExist, build, nil

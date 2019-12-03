@@ -78,6 +78,26 @@ func scanBuildRows(rows *sql.Rows) (*storage.BuildWithDuration, error) {
 	return &build, nil
 }
 
+// AreBuildsForBranch checks whether there are any builds for the given
+// branch and app
+func (c *Client) AreBuildsForBranch(appName, branchId string) (bool, error) {
+	const query = buildQueryWithoutInputsOutputs + `
+	WHERE application.name = $1 AND build.branch = $2
+	ORDER BY build.id DESC LIMIT 1
+	`
+	rows, err := c.Db.Query(query, appName, branchId)
+
+	if err != nil {
+		return false, errors.Wrapf(err, "db query '%s' failed", query)
+	}
+
+	if !rows.Next() {
+		return false, err
+	}
+	return true, err
+
+}
+
 // GetLastBuildCompareDigest returns the build id of the most recent build for
 // the application if it matches the provided digest.
 // Inputs are not fetched from the database.

@@ -205,6 +205,7 @@ type Storer interface {
 	GetSameTotalInputDigestsForAppBuilds(appName string, startTs time.Time) (map[string][]int, error)
 	GetLatestBuildByDigest(appName, totalInputDigest string, branchId string) (*BuildWithDuration, error)
 	GetLastBuildCompareDigest(appName, totalInputDigest string, branchId string) (*BuildWithDuration, error)
+	AreBuildsForBranch(appName, branchId string) (bool, error)
 
 	GetBuildOutputs(buildID int) ([]*Output, error)
 	BuildExist(id int) (bool, error)
