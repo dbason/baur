@@ -64,7 +64,7 @@ func GetBuildStatus(storer storage.Storer, app *App, branchId string, compare st
 	}
 	if err != nil {
 		if err == storage.ErrNotExist {
-			if branchId != compare {
+			if compare != "" && branchId != compare {
 				if app.UseLastBuild {
 					build, err = storer.GetLastBuildCompareDigest(app.Name, d.String(), compare)
 				} else {

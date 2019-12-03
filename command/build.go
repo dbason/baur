@@ -119,7 +119,7 @@ func init() {
 	buildCmd.Flags().BoolVarP(&buildForce, "force", "f", false,
 		"force rebuilding of all applications")
 	buildCmd.PersistentFlags().StringVarP(&branchFlag, "branch", "b", "default", "Branch identifier to store build against")
-	buildCmd.PersistentFlags().StringVarP(&compareFlag, "compare", "c", "default", "Branch identifier to fall back to if no builds exist")
+	buildCmd.PersistentFlags().StringVarP(&compareFlag, "compare", "c", "", "Branch identifier to fall back to if no builds exist")
 
 	rootCmd.AddCommand(buildCmd)
 }

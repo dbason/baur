@@ -61,7 +61,7 @@ func init() {
 		lsAppsConfig.buildStatus.Usage(highlight))
 
 	lsAppsCmd.PersistentFlags().StringVarP(&lsBranchFlag, "branch", "b", "default", "Branch identifier to store build against")
-	lsAppsCmd.PersistentFlags().StringVarP(&lsCompareFlag, "compare", "c", "default", "Branch identifier to fall back to")
+	lsAppsCmd.PersistentFlags().StringVarP(&lsCompareFlag, "compare", "c", "", "Branch identifier to fall back to")
 
 	lsAppsConfig.fields = flag.NewFields([]string{
 		lsAppNameParam,
