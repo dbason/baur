@@ -42,7 +42,7 @@ func (b BuildStatus) String() string {
 // storage if a build for this input digest already exist.
 // If the function returns BuildStatusExist the returned build pointer is valid
 // otherwise it is nil.
-func GetBuildStatus(storer storage.Storer, app *App, branchId string) (BuildStatus, *storage.BuildWithDuration, error) {
+func GetBuildStatus(storer storage.Storer, app *App, branchId string, compare string) (BuildStatus, *storage.BuildWithDuration, error) {
 	var build *storage.BuildWithDuration
 	var err error
 	if len(app.BuildCmd) == 0 {
@@ -64,7 +64,22 @@ func GetBuildStatus(storer storage.Storer, app *App, branchId string) (BuildStat
 	}
 	if err != nil {
 		if err == storage.ErrNotExist {
-			return BuildStatusPending, nil, nil
+			if branchId != compare {
+				if app.UseLastBuild {
+					build, err = storer.GetLastBuildCompareDigest(app.Name, d.String(), compare)
+				} else {
+					build, err = storer.GetLatestBuildByDigest(app.Name, d.String(), compare)
+				}
+				if err != nil {
+					if err == storage.ErrNotExist {
+						return BuildStatusPending, nil, nil
+					} else {
+						return -1, nil, errors.Wrap(err, "fetching latest build failed")
+					}
+				}
+			} else {
+				return BuildStatusPending, nil, nil
+			}
 		}
 
 		return -1, nil, errors.Wrap(err, "fetching latest build failed")

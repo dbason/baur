@@ -71,11 +71,12 @@ The following Environment Variables are supported:
 	highlight("DOCKER_TLS_VERIFY"))
 
 const buildExampleHelp = `
-build payment-service		build and upload the application with the name payment-service
-build --verbose --force		rebuild and upload all applications, enable verbose output
-build --skip-upload shop-ui	build the application with the name shop-ui, skip uploading it's build ouputs
-build --branch=shop shop-ui	build the shop-ui using the shop branch identifier
-build ui/shop			build and upload the application in the directory ui/shop
+build payment-service		     build and upload the application with the name payment-service
+build --verbose --force		     rebuild and upload all applications, enable verbose output
+build --skip-upload shop-ui	     build the application with the name shop-ui, skip uploading it's build ouputs
+build --branch=shop shop-ui	     build the shop-ui using the shop branch identifier
+build --branch=shop --compare=master build the shop-u using the shop branch identifier.  If no builds exist with shop will use master instead
+build ui/shop			     build and upload the application in the directory ui/shop
 `
 
 var buildCmd = &cobra.Command{
@@ -99,6 +100,7 @@ var (
 )
 
 var branchFlag string
+var compareFlag string
 
 type uploadUserData struct {
 	App    *baur.App
@@ -117,6 +119,7 @@ func init() {
 	buildCmd.Flags().BoolVarP(&buildForce, "force", "f", false,
 		"force rebuilding of all applications")
 	buildCmd.PersistentFlags().StringVarP(&branchFlag, "branch", "b", "default", "Branch identifier to store build against")
+	buildCmd.PersistentFlags().StringVarP(&compareFlag, "compare", "c", "default", "Branch identifier to fall back to if no builds exist")
 
 	rootCmd.AddCommand(buildCmd)
 }
@@ -535,7 +538,7 @@ func buildRun(cmd *cobra.Command, args []string) {
 func mustGetBuildStatus(app *baur.App, storage storage.Storer) (baur.BuildStatus, *storage.BuildWithDuration, string) {
 	var strBuildID string
 
-	status, build, err := baur.GetBuildStatus(storage, app, branchFlag)
+	status, build, err := baur.GetBuildStatus(storage, app, branchFlag, compareFlag)
 	if err != nil {
 		log.Fatalf("%s: %s", app.Name, err)
 	}
