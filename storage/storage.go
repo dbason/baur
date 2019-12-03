@@ -50,6 +50,7 @@ type Build struct {
 	StartTimeStamp   time.Time
 	StopTimeStamp    time.Time
 	TotalInputDigest string
+	BranchId         string
 	Outputs          []*Output
 	Inputs           []*Input
 }

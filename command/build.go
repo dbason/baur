@@ -133,6 +133,7 @@ func resultAddBuildResult(bud *buildUserData, r *build.Result) {
 		},
 		StartTimeStamp:   r.StartTs,
 		StopTimeStamp:    r.StopTs,
+		BuildId:          branchFlag,
 		Inputs:           bud.Inputs,
 		TotalInputDigest: bud.TotalInputDigest,
 	}
