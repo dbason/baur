@@ -5,14 +5,15 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/pelletier/go-toml"
+	toml "github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 )
 
 // App stores an application configuration.
 type App struct {
-	Name  string `toml:"name" comment:"Name of the application"`
-	Build Build  `toml:"Build"`
+	Name         string `toml:"name" comment:"Name of the application"`
+	UseLastBuild bool   `toml:"use_last_build" comment:"Only compare against the last build"`
+	Build        Build  `toml:"Build"`
 }
 
 // Build the build section
@@ -129,8 +130,8 @@ func exampleBuildOutput() BuildOutput {
 // ExampleApp returns an exemplary app cfg struct with the name set to the given value
 func ExampleApp(name string) *App {
 	return &App{
-		Name: name,
-
+		Name:         name,
+		UseLastBuild: false,
 		Build: Build{
 			Command: "make dist",
 			Input:   exampleBuildInput(),

@@ -29,7 +29,7 @@ type App struct {
 	Repository       *Repository
 	Outputs          []BuildOutput
 	totalInputDigest *digest.Digest
-
+	UseLastBuild     bool
 	UnresolvedInputs []*cfg.BuildInput
 	buildInputs      []*File
 }
@@ -197,11 +197,12 @@ func NewApp(repository *Repository, cfgPath string) (*App, error) {
 	}
 
 	app := App{
-		Repository: repository,
-		Path:       path.Dir(cfgPath),
-		RelPath:    appRelPath,
-		Name:       appCfg.Name,
-		BuildCmd:   strings.TrimSpace(appCfg.Build.Command),
+		Repository:   repository,
+		Path:         path.Dir(cfgPath),
+		RelPath:      appRelPath,
+		Name:         appCfg.Name,
+		UseLastBuild: appCfg.UseLastBuild,
+		BuildCmd:     strings.TrimSpace(appCfg.Build.Command),
 	}
 
 	err = app.addBuildOutput(&appCfg.Build.Output)

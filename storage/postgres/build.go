@@ -78,6 +78,47 @@ func scanBuildRows(rows *sql.Rows) (*storage.BuildWithDuration, error) {
 	return &build, nil
 }
 
+// GetLastBuildCompareDigest returns the build id of the most recent build for
+// the application if it matches the provided digest.
+// Inputs are not fetched from the database.
+// If no builds exist storage.ErrNotExist is returned
+func (c *Client) GetLastBuildCompareDigest(appName, totalInputDigest string, branchId string) (*storage.BuildWithDuration, error) {
+	const query = buildQueryWithoutInputsOutputs + `
+	WHERE application.name = $1 AND build.branch = $2
+	ORDER BY build.id DESC LIMIT 1
+	`
+	rows, err := c.Db.Query(query, appName, branchId)
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "db query '%s' failed", query)
+	}
+
+	if !rows.Next() {
+		return nil, storage.ErrNotExist
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "iterating over db results failed:")
+	}
+
+	build, err := scanBuildRows(rows)
+	rows.Close()
+	if err != nil {
+		return nil, errors.Wrapf(err, "scanning result of db query '%s' failed", query)
+	}
+	if build.Build.TotalInputDigest != totalInputDigest {
+		return nil, storage.ErrNotExist
+	}
+	builds, err := c.GetBuildOutputs(build.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "fetching build outputs failed")
+	}
+
+	build.Outputs = builds
+
+	return build, err
+}
+
 // GetLatestBuildByDigest returns the build id of a build for the application
 // with the passed digest. If multiple builds exist, the one with the lastest
 // stop_timestamp is returned.
