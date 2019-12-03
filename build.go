@@ -80,9 +80,9 @@ func GetBuildStatus(storer storage.Storer, app *App, branchId string, compare st
 			} else {
 				return BuildStatusPending, nil, nil
 			}
+		} else {
+			return -1, nil, errors.Wrap(err, "fetching latest build failed")
 		}
-
-		return -1, nil, errors.Wrap(err, "fetching latest build failed")
 	}
 
 	return BuildStatusExist, build, nil
